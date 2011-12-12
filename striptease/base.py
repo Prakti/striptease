@@ -20,17 +20,20 @@ from striptease.util import logged, logging
 
 class Token(object):
     """
-    This is the base class for the whole library, which bundles some
-    common code and provides implementation stubs for the subclasses. Actual
-    structures are then created with the ``Struct`` class, which acts as a
-    container for ``Token``. Hence you can nest ``Struct`` instances.
+    This is the base class for the whole library, which bundles some common
+    code and provides implementation stubs for the subclasses. Actual
+    structures are then created with the :py:class:`.Struct` class, which acts
+    as a container for :py:class:`Token`. Hence you can nest
+    :py:class:`.Struct` instances.
 
-    All subclasses have to implement the ``encode``, ``decode`` methods:
+    All subclasses  of :py:class:`!Token` have to implement the methods
+    :py:meth:`encode <.Token.encode>` and :py:meth:`decode <.Token.decode>`
 
-    Furhtermore, all subclasses must either override the ``length`` method or
-    implement the ``encode_len`` or ``decode_len`` methods. On certain
-    occasions, the binary length of some values need to be determined
-    dynamically, based on the provided values
+    Furhtermore, all subclasses must either override the :py:meth:`length
+    <.Token.length>` method or implement the :py:meth:`encode_len
+    <.Token.encode_len>` or :py:meth:`decode_len <.Token.decode_len>` methods.
+    On certain occasions, the binary length of some values need to be
+    determined dynamically, based on the provided values
     """
 
     def __init__(self, parent=None):
@@ -51,7 +54,8 @@ class Token(object):
 
         :param dikt: dictionary containing all values to be encoded
         :param payload: a bytestring containing already encoded data.
-        :return: ``dikt, payload``
+
+        :return: the ``dikt`` and the extended ``payload``
         """
         raise AttributeError("Not implemented")
 
@@ -59,14 +63,23 @@ class Token(object):
         """
         Decode the value for this token from ``payload`` and put it under the
         associated name into ``dikt``, then return the shortened ``payload``
-        and the updated ``dikt``
+        and the updated ``dikt``. It is important that decoded data is
+        stripped from the front of ``payload``, so the next token knows where
+        to start decoding.
+
+        :param payload: a bytestring containing the data to decode.
+        :param dikt: a dictionary where the decoded data is stored under the
+                     token's name
+        :return: the ``dikt`` containing the decoded values and the shortened
+                     ``payload``
         """
         raise AttributeError("Not implemented")
 
     def encode_len(self, dikt):
         """
         Calculate the expected length of the encoded value and return
-        ``length, dikt``. This method is called by ``Token.length``.
+        ``length, dikt``. This method is called by :py:meth:`length
+        <.Token.length>`.
         """
         raise AttributeError("Not Implemented")
 
@@ -75,7 +88,7 @@ class Token(object):
         Calculate the expectend length of the encoded value and return
         ``lenght, payload[lenght:]`` (i.e. the lenght, and the payload
         shortened at the front by the lenght. This method is called by
-        ``Token.lenght``
+        :py:meth:`length <.Token.length>`
         """
         raise AttributeError("Not Implemented")
 
@@ -95,7 +108,8 @@ class Token(object):
 
 class Padding(Token):
     """
-    Padding bytes which contain no data.
+    Padding bytes which contain no actual data. ``bytes`` has to be a
+    bytestring representation which can be inlined into the payload.
     """
 
     def __init__(self, bytes):
@@ -123,24 +137,30 @@ class Padding(Token):
 @logged()
 class Struct(Token):
     """
-    The base compund token. Structs may be nestes but *inner* structs are
-    required to have a name. After the ``Struct`` is initialized it is filled
-    via the ``append`` method. ``append`` returns the struct itself, so
-    constructor and ``append`` may be directly chained:
+    The base compund token. Structs may be nested but *inner* structs are
+    required to have a name. After the :py:class:`.Struct` is initialized it
+    is populated with sub-token via the :py:meth:`.append` method.
+    :py:meth:`.append` returns the struct itself, so constructor and
+    :py:meth:`.append` may be directly chained:
+
     >>> struct = Struct().append(
     ...     Integer('foo', False, 2),
     ...     Integer('bar', True, 1)
     ... )
 
     Encoding and Decoding of Structs works like for all other token:
+
     >>> data = {'foo': 28015, 'bar': 111}
     >>> struct.encode(data)
     ({'foo': 28015, 'bar': 111}, 'moo')
     >>> struct.decode('meh', dict())
     ('', {'foo': 28005, 'bar': 104})
+
+    :param name: (optional) used to store and retrieve data from the supplied
+                 dictonary during de- and encoding
     """
 
-    def __init__(self, name=''):
+    def __init__(self, name=""):
         Token.__init__(self)
         self.registry = dict()
         self.structure = list()
@@ -148,8 +168,10 @@ class Struct(Token):
 
     def append(self, *items):
         """
-        Populate the `Struct` with `Token`. This function returns the `Struct`
-        object, so it can be directly chained after the initialization.
+        Populate the :py:class:`.Struct` with :py:class:`.Token`. This function returns the
+        :py:class:`.Struct` object, so it can be directly chained after the
+        initialization. This method accepts an arbitrary number of arguments,
+        all of which must be subclasses of :py:class:`.Token`.
         """
         for item in items:
             self.registry[item.name] = item
@@ -163,7 +185,7 @@ class Struct(Token):
 
     def encode(self, dikt, payload=""):
         """
-        Extract data by name from dikt, encode and append to payload
+        TODO: correct docstring
         """
         parent_dikt = dikt
         if self.parent:
@@ -177,8 +199,7 @@ class Struct(Token):
 
     def decode(self, payload, dikt):
         """
-        Slices self.length bytes from front of payload, decodes the data and
-        stores it in dikt. Then returns the shortened payload and the dikt
+        TODO: correct docstring
         """
         parent_dikt = dikt
         if self.parent:
@@ -193,8 +214,7 @@ class Struct(Token):
 
     def length(self, parm):
         """
-        Determine the length of the binary data in bytes, the token produces
-        on encoding. `parm` may be a bytestring or a dikt.
+        TODO: correct docstring
         """
         _length = 0
         for token in structure:

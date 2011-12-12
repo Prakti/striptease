@@ -23,14 +23,14 @@ class LengthSpecifier(Token):
     Three sub-classes are predefined, which are needed to determine the
     length of the binary data during encoding and decoding:
 
-    `Static`:
+    :py:class:`.Static`:
             The size of the array or string is fixed
 
-    `Dynamic`:
+    :py:class:`.Dynamic`:
             The size of the array or string is determined by an integer number
             preceding the array or string
 
-    `Consumer`:
+    :py:class:`.Consumer`:
             No size is given. When decoding, the Consumer takes all the
             remaining binary data and tries to decode it.
 
@@ -47,11 +47,11 @@ class LengthSpecifier(Token):
 
 class Static(LengthSpecifier):
     """
-    Used to specify ``Sequences`` of a fixed type.
+    Used to specify :py:class:`Sequences <.Sequence>` whose length is known at compile-time.
 
-    :param length: must be an integer value, determines the lenght in *pointer
-                   increments*, similar to C arrays, not in bytes.
-    :param seqtype: instance of a subclass of ``Sequence``.
+    :param length: must be an integer value, determines the lenght in
+                   *elements*, similar to C arrays, not in bytes.
+    :param seqtype: instance of a subclass of :py:class:`.Sequence`.
     """
 
     def __init__(self, length, seqtype):
@@ -78,14 +78,20 @@ class Static(LengthSpecifier):
 
 class Dynamic(LengthSpecifier):
     """
-    Used to specify ``Sequences`` which have a preceding length-field. This
-    length-field must precede the sequence data in the bytestream but does not
-    have to do so diretly, i.e. other data may be in between the length-field
-    and the actual sequence.
+    Used to specify :py:class:`Sequences <.Sequence>` whose length is specified in the bytestream.
+    This length-field must precede the sequence data in the bytestream but
+    does not have to do so diretly, i.e. other data may be in between the
+    length-field and the actual sequence.
+
+    .. todo:: examples for length fields
 
     :param len_name: is the name of the token specifying the length of the
                      sequence
-    :param seqtype:  is the instance of a subclass of ``Seqcuence``
+    :param seqtype:  is the instance of a subclass of :py:class:`.Sequence`
+    :param comp_len: (optional) is a function which should be used to count
+                     the number of items in the value supplied by the
+                     dictionary during encoding.
+                     Defaults to :py:func:`len`
     """
 
     def __init__(self, len_name, seqtype, comp_len=len):
@@ -102,13 +108,13 @@ class Dynamic(LengthSpecifier):
     @parent.setter
     def parent(self, parent):
         """
-        When a ``Struct`` registers itself as a parent, we look up the token
-        encoding our length and mokey-patch it's ``encode`` method. That way,
+        When a :py:class:`.Struct` registers itself as a parent, we look up the token
+        encoding our length and mokey-patch it's :py:meth:`encode` method. That way,
         the length of the dynamic array can be determined on the fly during
         encoding.
 
-        Analogous, the lenght-token's ``decode_len`` method is patched, since
-        this class' ``decode_len`` method needs the length information from
+        Analogous, the lenght-token's :py:meth:`decode_len` method is patched, since
+        this class' :py:meth:`decode_len` method needs the length information from
         the lenght-token.
         """
         if parent != None and type(parent) == Struct:
@@ -164,12 +170,17 @@ class Dynamic(LengthSpecifier):
 
 class Consumer(LengthSpecifier):
     """
-    This ``LengthSpecifier`` is used for blob-like objects, when you want to
-    encode sequences of arbitrary size, without specifying an actual length.
-    When decoding, the ``Consumer`` tells its ``Sequence`` to try and decode
-    all remaining binary data. Because of that, ``Consumer`` sequences must be
-    the last token in a struct. They may not work in combination with nested
-    ``Structs``. You have been warned.
+    This :py:class:`.LengthSpecifier` is used for blob-like objects, i.e.:
+    when you want to encode sequences of arbitrary size, without specifying an
+    actual length.  When decoding, the :py:class:`.Consumer` tells its
+    :py:class:`.Sequence` to try and decode all remaining binary data.
+
+    .. warning::
+        :py:class:`.Consumer` tell their sequences that they must decode until
+        no more bytes are left in the payload. That why, sequences must be
+        the last token in a struct. They may not work in combination with
+        nested :py:class:`Structs <.Struct>`, because it is difficult to determine
+        their length.
     """
 
     def __init__(self, seqtype):
@@ -194,19 +205,78 @@ class Consumer(LengthSpecifier):
 
 class Sequence(Token):
     """
-    Abstract base class for all sequence token.
+    Abstract base class for all sequence token. Overwrites the methods
+    :py:meth:`.Token.length`, :py:meth:`.Token.encode_len` and
+    :py:meth:`.Token.decode_len`.
     """
 
     def __init__(self):
         Token.__init__(self)
 
+    def encode(self, length, dikt, payload=""):
+        """
+        Extends :py:meth:`.Token.encode` by requiring ``length`` as a
+        parameter.
+
+        :param length: the length of the sequence data from ``dikt`` to be
+                       encoded into the ``payload``
+
+                       .. note::
+                            similar to arrays in C, the length does not
+                            specify the length in bytes but `elements` of the
+                            given type.
+
+        :returns: ``dikt`` and the extended ``payload``
+        """
+        raise AttributeError("Not implemented")
+
+    def decode(self, length, dikt, payload=""):
+        """
+        Extends :py:meth:`.Token.decode` by requiring ``length`` as a
+        parameter.
+
+        :param length: the length of the sequence data encoded in ``payload``
+                       to be decoded into ``dikt``.
+
+                       .. note::
+                            similar to arrays in C, the length does not
+                            specify the length in bytes but `elements` of the
+                            given type.
+        :return: the shortened ``payload`` and the ``dikt`` containing the
+                  decoded data
+        """
+        raise AttributeError("Not implemented")
+
     def encode_len(self, lenght, dikt):
-        AttributeError("Not implemented")
+        """
+        Extends :py:meth:`.Token.encode_len` by requireing ``length`` as a
+        parameter. :py:meth:`.Sequence.length` dispatches to this method when
+        the length in bytes is needed during encoding into ``payload``
+
+        :param length: the length of the sequence in `elements`
+        :return: the length of the encoded sequence in `bytes`
+        """
+        raise AttributeError("Not implemented")
 
     def decode_len(self, length, payload):
-        AttributeError("Not implemented")
+        """
+        Extends :py:meth:`.Token.decode_len` by requiring ``length`` as a
+        parameter. :py:meth:`.Sequence.length` dispatches to this method when
+        the length in bytes is needed during decoding a ``payload``
+
+        :param length: the length of the sequence in `elements`
+        :return: the length of the encoded sequence in `bytes`
+        """
+        raise AttributeError("Not implemented")
 
     def length(self, length, parm):
+        """
+        Extends :py:meth:`.Token.length` by requiring ``length`` as a
+        parameter. This method computes the actual length in bytes.
+
+        :param length: the length of the sequence in `elements`
+        :returns: the length of the encoded data in `bytes`
+        """
         if type(parm) == str:
             return self.decode_len(length, parm)
         elif type(parm) == dict:
@@ -219,25 +289,35 @@ class Sequence(Token):
 class Array(Sequence):
     """
     This token is used to specify an array of a given type. After
-    initialization, you must specify the type of the array via the ``of``
-    method, which returns ``self``, so you can chain instantiation and
-    array-type specification in one go.
+    initialization, you must specify the type of the array via the
+    :py:meth:`of <.Array.of>` method, which returns ``self``, so you can chain
+    instantiation and array-type specification in one go.
+
+    .. todo:: example for `of`
     """
 
     def __init__(self, name, reverse=False):
-        Token.__init__(self)
+        Sequence.__init__(self)
         self.name = name
         self.reverse = reverse
         self.atype = None
 
     def of(self, atype):
+        """
+        This method is used to specify the type of the array.
+
+        :param atype: a subclass of :py:class:`.Token` specifying the type of
+                      the array
+        :returns: ``self`` i.e.: the instance of :py:class:`.Array` on which
+                  this method was called
+        """
         self.atype = atype
         self.atype.parent = self
         return self
 
     def encode(self, length, dikt, payload=""):
         """
-        Extract data by name from dikt, encode and append to payload
+        Extract data by name from dikt, encode and append to payload.
         """
         data = dikt[self.name]
         if self.reverse:
@@ -251,7 +331,8 @@ class Array(Sequence):
 
     def consume(self, payload, dikt):
         """
-        Try and decode all of the remaining payload.
+        Try and decode all of the remaining payload. This method is used in
+        the case an Array is with a :py:class:`.Consumer` length-specifier.
         """
         array = []
         buf = dict()
@@ -264,7 +345,7 @@ class Array(Sequence):
 
     def extract(self, length, payload, dikt):
         """
-        Slice length * self.atype.length bytes from front of payload,
+        Slice ``length * self.atype.length`` bytes from front of payload,
         decodes the data and stores it as a tuple in dikt. Then returns the
         shortened payload and the dikt
         """
@@ -280,14 +361,14 @@ class Array(Sequence):
 
     def decode(self, length, payload, dikt):
         """
-        Based on the length, this method dispatches to two other methods (for
-        readability reasons):
+        For readability reaseons this method dispatches to two other methods,
+        based on the wrapping :py:class:`.LengthSpecifier`
 
-        ``consume``:
-                in case the wrapping length-specifier is a ``Consumer`` and
+        :py:meth:`consume <.Array.consume>`:
+                in case the wrapping length-specifier is a :py:class:`.Consumer` and
                 hands over a length of -1
 
-        ``extract``:
+        :py:meth:`extract <.Array.extract>`:
                 in case the wrapping length-specifier can supply an actual
                 length.
         """
@@ -297,7 +378,10 @@ class Array(Sequence):
             return self.extract(length, payload, dikt)
 
     def atype_length(self, parm):
-        """ Convenience wrapper for accessing the length of the array-type """
+        """
+        Convenience wrapper for accessing the length of the array-type.
+        Dispatches to :py:meth:`self.atype.length <.Token.length>`
+        """
         _len, _parm = self.atype.length(parm)
         return _len
 
@@ -318,11 +402,21 @@ class Array(Sequence):
 
 
 @logged()
-class String(Token):
-    """ Class for encoding bytestrings into a payload """
+class String(Sequence):
+    """
+    Class for encoding bytestrings into a payload.
+
+    :param name: the token's name. Used for retrieving and storing data from
+                 the supplied dictionary during en- and decoding
+    :param reverse: (optional) states if the values have to be reversed before
+                    encoding and after decoding. This can be helpful if you
+                    have sequences whose direction have a semantic but, for
+                    mysterious reasons, are encoded reverse to that semantic
+                    direction. defaults to ``False``
+    """
 
     def __init__(self, name, endian='!', reverse=False):
-        Token.__init__(self)
+        Sequence.__init__(self)
         self.name = name
         self.endian = endian
         self.reverse = reverse
@@ -340,7 +434,6 @@ class String(Token):
             value = "".join(reversed(value))
         payload += struct.pack('%ds' % length, value)
         return dikt, payload
-
 
     def decode(self, length, payload, dikt):
         """
@@ -377,6 +470,29 @@ class String(Token):
             return length, payload[length:]
 
     def __getitem__(self, key):
+        """
+        This method provides a convenient shorthand notation for specifying
+        :py:class:`.String` token and directly wrapping it in an appropriate
+        :py:class:`.LengthSpecifier`. You  This:
+
+        >>> from striptease import Consumer, String, uint_8
+        >>> struct = Struct().append(
+        ...     uint_8('strlen')
+        ...     Dynamic('strlen', String('bar')),
+        ...     Static(10, String('moo')),
+        ...     Consumer(String('foo')),
+        ... )
+
+        is equivalent to this:
+
+        >>> from striptease import Consumer, String, uint_8
+        >>> struct = Struct().append(
+        ...     uint_8('strlen'),
+        ...     String('bar')['strlen'],
+        ...     String('moo')[10],
+        ...     String('foo')[None],
+        ... )
+        """
         if not key:
             return Consumer(self)
         else:
@@ -413,7 +529,7 @@ def array_factory(cls):
     A class decorator for adding a shorthand notation for specifiying arrays
     of the decorated class-token.
 
-    ..warning::
+    .. warning::
         This decorator replaces the cls.__getitem__ method, so must have it
         still free.
     """

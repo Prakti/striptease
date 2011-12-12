@@ -19,10 +19,10 @@ Striptease has two optional dependencies:
 Installation procedure
 ----------------------
 
-Striptease can be installed using py:mod:`distutils`. Run the following
+Striptease can be installed using :py:mod:`distutils`. Run the following
 command::
 
-python setup.py install
+  python setup.py install
 
 
 Unit Testing

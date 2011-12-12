@@ -21,17 +21,20 @@ from striptease.base import Token
 
 class Number(Token):
     """
-    Abstract Base class for encoding numbers. Subclasses must define ``FMT`` for resolving
-    format strings from sizes. This class should not be instantiated, it just
-    accumulates common code parts for the ``Integer` and ``Float` class.
+    Abstract Base class for encoding numbers. Subclasses must define ``FMT``
+    for resolving format strings from sizes. This class should not be
+    instantiated, it just accumulates common code parts for the
+    :py:class:`.Integer` and :py:class:`.Float` class.
 
     :param name: the name under which the token should look up or store its
-                 value durin en-/decoding.
-    :param sing: ``True`` if this is a signed number, defaults to ``True`` for
+                 value during en-/decoding.
+    :param sign: ``True`` if this is a signed number, defaults to ``True`` for
                  all floating point numbers.
     :param length: the length in bytes of the number. Is used to look up the
                    correct format string from the ``FMT`` dict, the subclasses
                    must supply.
+    :param endian: you can specify byte-endianness like defined in the
+                   :py:mod:`struct` module, default is '!'
     """
 
     def __init__(self, name, sign, length, endian='!'):
@@ -44,7 +47,9 @@ class Number(Token):
 
     def fmt(self):
         """
-        Looks up the format-string according to the specified length.
+        Looks up the format-string of the  according to the specified length.
+
+        .. todo:: Better explanation of interaction with subclasses
         """
         fmt = self.FMT[self.__length]
         return self.endian + (fmt if self.sign else fmt.upper())
@@ -75,13 +80,15 @@ class Number(Token):
 
 class Integer(Number):
     """
-    Subclass of Nunber for handling integer numbers. Does not specify own
-    ``encode`` and ``decode`` methods and instead defines ``FMT`` as a lookup
-    table for the correct format specifier used in ``Number``.
+    Subclass of :py:class:`.Nunber` for handling integer numbers. Inherits
+    :py:meth:`encode` and :py:meth:`decode` from :py:class:`.Number` and
+    defines ``FMT`` as a lookup table for the correct format specifier used in
+    :py:class:`.Number`.
 
     :param lenght: may be 1, 2, 4, or 8.
 
     Example:
+
     >>> int16_token = Integer('foo', True, 2)
     >>> data = {'foo' : 25976}
     >>> int16_token.encode(data)
@@ -106,12 +113,13 @@ class Integer(Number):
 class Float(Number):
     """
     Subclass of Number for handling floating-point numbers. Similar to
-    ``Integer``, this class also does not specify own ``encode`` and
-    ``decode`` methods but defines ``FMT``.
+    :py:class:`.Integer`, this class also does not implement own :py:meth:`encode` and
+    :py:meth:`decode` methods but defines ``FMT``.
 
     :param lenght: may be 4 or 8, for single or double precision respectively.
 
     Example:
+
     >>> single_token = Float('bar', 4)
     >>> data = {'bar': 4.359794990231121e+27}
     >>> single_token.encode(data)

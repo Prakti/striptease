@@ -32,6 +32,8 @@ class NumberFactory(object):
 class IntegerFactory(NumberFactory):
     """
     Factory class for C99 lookalike type-token, including array notations
+
+    .. todo:: examples
     """
 
     def __init__(self, sign, length):
@@ -46,6 +48,8 @@ class FloatFactory(NumberFactory):
     """
     Factory class for C99 float lookalike type-token, including array
     notations.
+
+    .. todo:: examples
     """
 
     def __init__(self, length):
@@ -60,8 +64,8 @@ class FloatFactory(NumberFactory):
 
 for i in [1, 2, 4, 8]:
     # auto-generate shorthand factory's and inject into module namespace
-    locals()['uint_%d' % (i * 8)] = IntegerFactory(False, i)
-    locals()['int_%d' % (i * 8)] = IntegerFactory(True, i)
+    locals()['uint%d' % (i * 8)] = IntegerFactory(False, i)
+    locals()['int%d' % (i * 8)] = IntegerFactory(True, i)
 
 single = FloatFactory(4)
 double = FloatFactory(8)
