@@ -17,7 +17,7 @@ except ImportError:
         """
         logger = logging.getLogger(name)
         if level:
-            logger.set_level(level)
+            logger.setLevel(level)
         return logger
 
 

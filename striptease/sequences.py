@@ -78,10 +78,10 @@ class Static(LengthSpecifier):
 
 class Dynamic(LengthSpecifier):
     """
-    Used to specify :py:class:`Sequences <.Sequence>` whose length is specified in the bytestream.
-    This length-field must precede the sequence data in the bytestream but
-    does not have to do so diretly, i.e. other data may be in between the
-    length-field and the actual sequence.
+    Used to specify :py:class:`Sequences <.Sequence>` whose length is
+    specified in the bytestream.  This length-field must precede the sequence
+    data in the bytestream but does not have to do so diretly, i.e. other data
+    may be in between the length-field and the actual sequence.
 
     .. todo:: examples for length fields
 
@@ -176,7 +176,7 @@ class Consumer(LengthSpecifier):
     :py:class:`.Sequence` to try and decode all remaining binary data.
 
     .. warning::
-        :py:class:`.Consumer` tell their sequences that they must decode until
+        The :py:class:`.Consumer` tells its sequences that they must decode until
         no more bytes are left in the payload. That why, sequences must be
         the last token in a struct. They may not work in combination with
         nested :py:class:`Structs <.Struct>`, because it is difficult to determine
@@ -291,7 +291,7 @@ class Array(Sequence):
     This token is used to specify an array of a given type. After
     initialization, you must specify the type of the array via the
     :py:meth:`of <.Array.of>` method, which returns ``self``, so you can chain
-    instantiation and array-type specification in one go.
+    instantiation and array-type specification in one line.
 
     .. todo:: example for `of`
     """
@@ -437,7 +437,9 @@ class String(Sequence):
 
     def decode(self, length, payload, dikt):
         """
-        TODO: document
+        Cuts off ``length`` bytes from payload, converts to a string and puts
+        the result into ``dikt``. If ``length == -1``, the remaining payload
+        is 'consumed' and decoded.
         """
         if length == -1: # consumer case
             if self.reverse:
@@ -473,11 +475,11 @@ class String(Sequence):
         """
         This method provides a convenient shorthand notation for specifying
         :py:class:`.String` token and directly wrapping it in an appropriate
-        :py:class:`.LengthSpecifier`. You  This:
+        :py:class:`.LengthSpecifier`. The following example:
 
-        >>> from striptease import Consumer, String, uint_8
+        >>> from striptease import Consumer, String, uint8
         >>> struct = Struct().append(
-        ...     uint_8('strlen')
+        ...     uint8('strlen')
         ...     Dynamic('strlen', String('bar')),
         ...     Static(10, String('moo')),
         ...     Consumer(String('foo')),
@@ -485,9 +487,9 @@ class String(Sequence):
 
         is equivalent to this:
 
-        >>> from striptease import Consumer, String, uint_8
+        >>> from striptease import Consumer, String, uint8
         >>> struct = Struct().append(
-        ...     uint_8('strlen'),
+        ...     uint8('strlen'),
         ...     String('bar')['strlen'],
         ...     String('moo')[10],
         ...     String('foo')[None],
@@ -509,19 +511,15 @@ def construct_array(token, len):
     Convenience function to create an array from a given token-instance.
     Can construct dynamic, static and comsumer type arrays with the given
     token's type.
-
-    TODO: examples.
     """
     reverse = getattr(token, 'reverse', False)
     if not len:
         return Consumer(Array(token.name, reverse).of(token))
     else:
-        if type(len) == int:
-            return Static(len, Array(token.name, reverse).of(token))
-        elif type(len) == str:
+        if type(len) == str:
             return Dynamic(len, Array(token.name, reverse).of(token))
         else:
-            pass # TODO: raise Error
+            raise TypeError('len must be either "int" or "str"')
 
 
 def array_factory(cls):

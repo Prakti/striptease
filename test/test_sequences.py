@@ -4,7 +4,7 @@ import string
 import random
 
 from striptease import Struct, Dynamic, Static, Consumer, Array,\
-                       String, Integer, uint_8
+                       String, Integer, uint8
 
 
 #TODO: more tests to check out all corner cases
@@ -64,7 +64,7 @@ def test_string():
                 print "endian = %s, reverse = %s, i = %d" % (endian, reverse, i)
                 slen = random.getrandbits(8)
                 coder_token = Struct().append(
-                    uint_8('foo_len'),
+                    uint8('foo_len'),
                     Dynamic('foo_len', String('foo', endian, reverse)),
                     Static(slen, String('bar', endian, reverse)),
                     Consumer(String('moo', endian, reverse))

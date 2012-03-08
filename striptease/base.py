@@ -185,7 +185,9 @@ class Struct(Token):
 
     def encode(self, dikt, payload=""):
         """
-        TODO: correct docstring
+        Iterates over all tokens in the structure and encode the data from
+        ``dikt`` and append it to ``payload``. Returns ``dikt`` as is and
+        and the initial ``payload`` plus the encoded data.
         """
         parent_dikt = dikt
         if self.parent:
@@ -199,7 +201,11 @@ class Struct(Token):
 
     def decode(self, payload, dikt):
         """
-        TODO: correct docstring
+        Iterates over all tokens in the structure and successively decodes
+        their values from ``payload`` into ``dikt``, thereby consuming
+        ``payload``. Returns the initial ``payload`` minus the decoded data.
+        If necessary, you have to manually preserve ``payload`` before handing
+        it to ``decode``.
         """
         parent_dikt = dikt
         if self.parent:
@@ -214,7 +220,8 @@ class Struct(Token):
 
     def length(self, parm):
         """
-        TODO: correct docstring
+        Computes the length of the struct in bytes, based on the information
+        in ``parm``. Parm can be either ``payload`` or ``dikt``
         """
         _length = 0
         for token in structure:

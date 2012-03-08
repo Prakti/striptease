@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-    striptease.bitstring
-    ~~~~~~~~~~~~~~~~~~~~
+    striptease.bitfield
+    ~~~~~~~~~~~~~~~~~~~
 
-    Bitstring encoding support for striptease.
+    Bitfield encoding support for striptease.
 
     ..warning:: has the bitstring library as dependency
 """

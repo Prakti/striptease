@@ -4,9 +4,9 @@ Installation
 Dependencies
 ------------
 
-This alpha-release has been tested with Python 2.6 solely. If you have issues
-using striptease with any other version of the Python 2.x series, drop me a
-bug report.
+This alpha-release has been tested with Python 2.6 and 2.7 solely. If you have
+issues using striptease with any other version of the Python 2.x series, drop
+me a bug report.
 
 In addition :py:mod:`crcmod` is needed for computing and verifying
 checksums.

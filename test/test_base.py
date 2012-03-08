@@ -4,17 +4,17 @@ import string
 import random
 
 from striptease import Padding, Struct, Integer,\
-                       uint_8, uint_16, uint_32, single
+                       uint8, uint16, uint32, single
 
 #TODO: more tests to check corner cases and improve code-coverage
 
 def test_struct():
     coder_token = Struct().append(
-        uint_8('foo'),
+        uint8('foo'),
         Padding('asdf'),
-        uint_16('bar'),
+        uint16('bar'),
         Struct('baz').append(
-            uint_32('moo'),
+            uint32('moo'),
             single('meh')
         )
     )
