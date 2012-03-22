@@ -13,9 +13,14 @@
     :license: BSD, see LICENSE for details
 """
 
+import sys
 import random
 
 from striptease.util import logged, logging
+
+# Python 2 backwards compatibility
+if sys.version_info.major < 3:
+    bytes = str
 
 
 class Token(object):
@@ -49,8 +54,8 @@ class Token(object):
 
     def encode(self, dikt, payload):
         """
-        Look up associated value from ``dikt``, encode to bytestring and append
-        to ``payload`` then return ``dikt``, ``payload``
+        Look up associated value from ``dikt``, encode to bytestring and
+        append to ``payload`` then return ``dikt``, ``payload``
 
         :param dikt: dictionary containing all values to be encoded
         :param payload: a bytestring containing already encoded data.
@@ -108,29 +113,29 @@ class Token(object):
 
 class Padding(Token):
     """
-    Padding bytes which contain no actual data. ``bytes`` has to be a
+    Padding bytes which contain no actual data. ``padd`` has to be a
     bytestring representation which can be inlined into the payload.
     """
 
-    def __init__(self, bytes):
+    def __init__(self, padd):
         Token.__init__(self)
-        assert type(bytes) == str
-        self.bytes = bytes
+        assert type(padd) == bytes
+        self.padd = padd
         self.name = 'Pad:%X' % random.randint(0,255)
 
     def encode(self, dikt, payload):
-        return dikt, payload + self.bytes
+        return dikt, payload + self.padd
 
     def decode(self, payload, dikt):
-        length = len(self.bytes)
-        assert payload[:length] == self.bytes
+        length = len(self.padd)
+        assert payload[:length] == self.padd
         return payload[length:], dikt
 
     def encode_len(self, dikt):
-        return len(self.bytes), dikt
+        return len(self.padd), dikt
 
     def decode_len(self, payload):
-        length = len(self.bytes)
+        length = len(self.padd)
         return lenght, payload[length:]
 
 
@@ -168,10 +173,11 @@ class Struct(Token):
 
     def append(self, *items):
         """
-        Populate the :py:class:`.Struct` with :py:class:`.Token`. This function returns the
-        :py:class:`.Struct` object, so it can be directly chained after the
-        initialization. This method accepts an arbitrary number of arguments,
-        all of which must be subclasses of :py:class:`.Token`.
+        Populate the :py:class:`.Struct` with :py:class:`.Token`. This
+        function returns the :py:class:`.Struct` object, so it can be directly
+        chained after the initialization. This method accepts an arbitrary
+        number of arguments, all of which must be subclasses of
+        :py:class:`.Token`.
         """
         for item in items:
             self.registry[item.name] = item
@@ -183,7 +189,7 @@ class Struct(Token):
     def __contains__(self, key):
         return key in self.registry or key in self.structure
 
-    def encode(self, dikt, payload=""):
+    def encode(self, dikt, payload=bytes()):
         """
         Iterates over all tokens in the structure and encode the data from
         ``dikt`` and append it to ``payload``. Returns ``dikt`` as is and

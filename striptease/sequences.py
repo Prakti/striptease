@@ -501,7 +501,7 @@ class String(Sequence):
             if type(key) == int:
                 return Static(key, self)
             elif type(key) == str:
-                return Dynamid(key, self)
+                return Dynamic(key, self)
             else:
                 pass # TODO: raise Error
 
