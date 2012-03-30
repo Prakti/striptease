@@ -46,7 +46,7 @@ syntax.  Thus, for creating a token for a 8-Bit signed integer you can write:
 .. doctest:: api
 
    >>> from striptease import uint8
-   >>> token = int8('foo')
+   >>> token = uint8('foo')
 
 Which is equivalent to:
 
