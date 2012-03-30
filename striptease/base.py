@@ -75,8 +75,8 @@ class Token(object):
         :param payload: a bytestring containing the data to decode.
         :param dikt: a dictionary where the decoded data is stored under the
                      token's name
-        :return: the ``dikt`` containing the decoded values and the shortened
-                     ``payload``
+        :return:  the shortened ``payload`` and the ``dikt`` containing the
+                  decoded values
         """
         raise AttributeError("Not implemented")
 
@@ -148,6 +148,7 @@ class Struct(Token):
     :py:meth:`.append` returns the struct itself, so constructor and
     :py:meth:`.append` may be directly chained:
 
+    >>> from striptease import Struct, Integer
     >>> struct = Struct().append(
     ...     Integer('foo', False, 2),
     ...     Integer('bar', True, 1)

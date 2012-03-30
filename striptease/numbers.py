@@ -120,6 +120,7 @@ class Float(Number):
 
     Example:
 
+    >>> from striptease import Float
     >>> single_token = Float('bar', 4)
     >>> data = {'bar': 4.359794990231121e+27}
     >>> single_token.encode(data)

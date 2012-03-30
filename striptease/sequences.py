@@ -477,9 +477,9 @@ class String(Sequence):
         :py:class:`.String` token and directly wrapping it in an appropriate
         :py:class:`.LengthSpecifier`. The following example:
 
-        >>> from striptease import Consumer, String, uint8
+        >>> from striptease import Consumer, Dynamic, Static, String, uint8
         >>> struct = Struct().append(
-        ...     uint8('strlen')
+        ...     uint8('strlen'),
         ...     Dynamic('strlen', String('bar')),
         ...     Static(10, String('moo')),
         ...     Consumer(String('foo')),
@@ -518,6 +518,8 @@ def construct_array(token, len):
     else:
         if type(len) == str:
             return Dynamic(len, Array(token.name, reverse).of(token))
+        elif type(len) == int:
+            return Static(len, Array(token.name, reverse).of(token))
         else:
             raise TypeError('len must be either "int" or "str"')
 
