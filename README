@@ -11,9 +11,9 @@ of checksums.
 
 Optional Dependencies
 ---------------------
-If you want to use extensive logging, install the `logbook` library (which is
+If you want to use extensive logging, install the *logbook* library (which is
 pocoo project) and if you want to have bit-level access, install the
-'bitstring' library. 
+*bitstring* library. 
 
 Installing
 ----------
@@ -21,6 +21,6 @@ You can simply rund 'setup.py' for installation via distutils. enjoy.
 
 Documentation
 -------------
-You can find the documentation in the `doc` subdirectory or on
-`http://www.prakti.org/striptease/`
+You can find the documentation in the *doc* subdirectory or on
+http://www.prakti.org/striptease/
 
